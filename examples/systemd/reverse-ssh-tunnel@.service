@@ -1,0 +1,16 @@
+[Unit]
+Description=Reverse SSH tunnel to proxy PROXY_NAME on port %i
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+ExecStartPre=/usr/sbin/ip route replace PROXY_IP/32 via ORIGIN_GW dev ORIGIN_IFACE src ORIGIN_IP congctl lock cubic
+ExecStart=/usr/bin/ssh -NT -i /root/.ssh/proxy_PROXY_NAME_ed25519 -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=accept-new -R 127.0.0.1:%i:ORIGIN_IP:443 root@PROXY_IP
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
